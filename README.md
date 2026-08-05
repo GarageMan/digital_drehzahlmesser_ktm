@@ -2,4 +2,4 @@ Dieses Projekt hat die Entwicklung eines digitalen Drehzahlmessers auf Basis ein
 Der Drehzahlmesser wird an einer KTM 690 SMCR betrieben.
 Das Design des Drehzahlmessers wird "analog" sein - etwas, das ich an meiner Supermoto (und auch der Enduro) wirklich sehr vermisse.
 
-[LICENSE](homelab_dashboard/LICENSE)
+[LICENSE](digitaler_drehzahlmesser/LICENSE)
