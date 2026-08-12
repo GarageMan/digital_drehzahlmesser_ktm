@@ -1,0 +1,6 @@
+pyserial>=3.5
+psutil>=5.9
+
+# Optional, nur fuer NVIDIA-GPU-Temperatur (siehe Kommentar in
+# pc_telemetry_sender.py):
+# pynvml>=11.5

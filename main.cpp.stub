@@ -1,0 +1,46 @@
+/*
+ * ESP32-Firmware-Einstiegspunkt - PLATZHALTER, noch nicht lauffaehig.
+ *
+ * Absichtlich (noch) keine Pin-Definitionen oder Display-Init-Sequenz in
+ * dieser Datei: Das CrowPanel-Board liegt dem Projekt noch nicht vor, und
+ * erfundene Pinbelegungen wuerden genau den Fehler wiederholen, der in
+ * Sprint 1 an der urspruenglichen KI-Chat-Doku kritisiert wurde (dort
+ * wurde eine Pin-Tabelle "erfunden", die dem echten Datenblatt widersprach).
+ *
+ * Sobald das Elecrow CrowPanel 2.1" (ESP32-S3R8) da ist:
+ *   1. Das offizielle Beispielprojekt clonen:
+ *      https://github.com/Elecrow-RD/CrowPanel-2.1inch-HMI-ESP32-Rotary-Display-480-480-IPS-Round-Touch-Knob-Screen
+ *   2. Dessen Display-/Touch-/Encoder-Init (Arduino_ESP32RGBPanel + CST8xx-
+ *      Touch-Treiber) 1:1 uebernehmen - NICHT neu erfinden.
+ *   3. Die ESP32-Arduino-Core-Version aus Sprint 2 fixieren: v2.0.14 (siehe
+ *      README.md), sonst drohen Kompatibilitaetsprobleme laut Elecrow-
+ *      Doku.
+ *   4. Danach hier nur noch verdrahten:
+ *        - lv_init() + obiger Display-/Touch-Treiber-Init (aus Schritt 2)
+ *        - #include "core/ui.h" und ui_build() aufrufen
+ *        - einen vehicle_data_provider_t implementieren, der echte Sensoren
+ *          liest (Kurbelwellen-Interrupt, ADC fuer Gang/Temperaturen, siehe
+ *          Sprint1/2-Doku) - Interface exakt wie sim_provider.c, damit
+ *          ui.c UNVERAENDERT uebernommen werden kann.
+ *        - in loop(): lv_timer_handler(); provider.update(dt); ui_tick(...)
+ *
+ * Diese Datei traegt bewusst die Endung .cpp.stub (nicht .cpp), damit sie
+ * nicht versehentlich mitkompiliert wird, solange sie nur ein Geruest ist.
+ * Sobald Schritt 1-4 erledigt sind: in main.cpp umbenennen und ein
+ * platformio.ini fuer das CrowPanel-Board ergaenzen.
+ */
+
+#include <Arduino.h>
+// #include "core/ui.h"           // <- unveraendert von src/core/ übernehmbar
+// #include "esp32_sensor_provider.h"  // <- hier neu zu schreiben (siehe oben)
+
+void setup() {
+    Serial.begin(115200);
+    Serial.println("TODO: Display-/Touch-Init aus Elecrow-Beispielprojekt uebernehmen.");
+    // TODO: lv_init(); Display-Treiber-Init; ui_build();
+}
+
+void loop() {
+    // TODO: lv_timer_handler(); provider.update(dt); vehicle_data_t d = provider.get(); ui_tick(&d, dt);
+    delay(5);
+}
