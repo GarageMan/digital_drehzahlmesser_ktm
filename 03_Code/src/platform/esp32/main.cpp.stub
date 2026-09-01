@@ -1,46 +1,28 @@
 /*
- * ESP32-Firmware-Einstiegspunkt - PLATZHALTER, noch nicht lauffaehig.
+ * UEBERHOLT - siehe ktm_bringup/ktm_bringup.ino.
  *
- * Absichtlich (noch) keine Pin-Definitionen oder Display-Init-Sequenz in
- * dieser Datei: Das CrowPanel-Board liegt dem Projekt noch nicht vor, und
- * erfundene Pinbelegungen wuerden genau den Fehler wiederholen, der in
- * Sprint 1 an der urspruenglichen KI-Chat-Doku kritisiert wurde (dort
- * wurde eine Pin-Tabelle "erfunden", die dem echten Datenblatt widersprach).
+ * Diese Datei beschrieb urspruenglich den Plan, einen einzelnen main.cpp
+ * per PlatformIO zu bauen, sobald das CrowPanel-Board da ist. Zwei Dinge
+ * haben sich seitdem geaendert:
  *
- * Sobald das Elecrow CrowPanel 2.1" (ESP32-S3R8) da ist:
- *   1. Das offizielle Beispielprojekt clonen:
- *      https://github.com/Elecrow-RD/CrowPanel-2.1inch-HMI-ESP32-Rotary-Display-480-480-IPS-Round-Touch-Knob-Screen
- *   2. Dessen Display-/Touch-/Encoder-Init (Arduino_ESP32RGBPanel + CST8xx-
- *      Touch-Treiber) 1:1 uebernehmen - NICHT neu erfinden.
- *   3. Die ESP32-Arduino-Core-Version aus Sprint 2 fixieren: v2.0.14 (siehe
- *      README.md), sonst drohen Kompatibilitaetsprobleme laut Elecrow-
- *      Doku.
- *   4. Danach hier nur noch verdrahten:
- *        - lv_init() + obiger Display-/Touch-Treiber-Init (aus Schritt 2)
- *        - #include "core/ui.h" und ui_build() aufrufen
- *        - einen vehicle_data_provider_t implementieren, der echte Sensoren
- *          liest (Kurbelwellen-Interrupt, ADC fuer Gang/Temperaturen, siehe
- *          Sprint1/2-Doku) - Interface exakt wie sim_provider.c, damit
- *          ui.c UNVERAENDERT uebernommen werden kann.
- *        - in loop(): lv_timer_handler(); provider.update(dt); ui_tick(...)
+ *   1. Der tatsaechliche, auf echter Hardware erfolgreich getestete
+ *      Toolchain-Pfad (Sprint 3, Nachtrag 22.08.) ist die Arduino IDE mit
+ *      dem offiziellen RotaryScreen_2_1-Beispielsketch als Checkpoint -
+ *      nicht PlatformIO. Ein Wechsel zu PlatformIO waere ein ungetesteter
+ *      zusaetzlicher Schritt gewesen.
+ *   2. Arduino-Sketches sind Einzeldateien (bzw. Bibliotheken), keine
+ *      beliebigen relativen Include-Pfade wie im CMake-Build des
+ *      PC-Simulators - "#include core/ui.h" wie hier urspruenglich
+ *      geplant, funktioniert in einem Arduino-Sketch so nicht.
  *
- * Diese Datei traegt bewusst die Endung .cpp.stub (nicht .cpp), damit sie
- * nicht versehentlich mitkompiliert wird, solange sie nur ein Geruest ist.
- * Sobald Schritt 1-4 erledigt sind: in main.cpp umbenennen und ein
- * platformio.ini fuer das CrowPanel-Board ergaenzen.
+ * Der eigene KTM-Bring-up-Sketch liegt deshalb jetzt in
+ * ../ktm_bringup/ktm_bringup.ino und bindet core/ui.c ueber eine per
+ * tools/prepare_esp32_library.sh generierte Arduino-Bibliothek ein (siehe
+ * README dort). Die darin enthaltene Init-Sequenz (Display/Touch/PCF8574)
+ * ist weiterhin 1:1 aus dem offiziellen Beispiel uebernommen, nicht
+ * erfunden - siehe Kommentare in ktm_bringup.ino.
+ *
+ * Diese Datei bleibt als Hinweis stehen (Endung .stub, wird nicht
+ * mitkompiliert) statt geloescht zu werden, damit der urspruengliche Plan
+ * und der Grund fuer die Abweichung nachvollziehbar bleiben.
  */
-
-#include <Arduino.h>
-// #include "core/ui.h"           // <- unveraendert von src/core/ übernehmbar
-// #include "esp32_sensor_provider.h"  // <- hier neu zu schreiben (siehe oben)
-
-void setup() {
-    Serial.begin(115200);
-    Serial.println("TODO: Display-/Touch-Init aus Elecrow-Beispielprojekt uebernehmen.");
-    // TODO: lv_init(); Display-Treiber-Init; ui_build();
-}
-
-void loop() {
-    // TODO: lv_timer_handler(); provider.update(dt); vehicle_data_t d = provider.get(); ui_tick(&d, dt);
-    delay(5);
-}

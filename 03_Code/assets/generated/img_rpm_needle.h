@@ -3,6 +3,6 @@
 
 #include "lvgl/lvgl.h"
 
-extern const lv_img_dsc_t img_rpm_needle;
+extern const lv_image_dsc_t img_rpm_needle;
 
 #endif /* IMG_RPM_NEEDLE_H */

@@ -2,5 +2,8 @@ build/
 *.o
 *.a
 lib/lvgl/
-lib/lv_drivers/
 .cache/
+
+# Generierte Kopie von src/core/ + assets/generated/ als Arduino-Bibliothek,
+# siehe tools/prepare_esp32_library.sh - nicht von Hand bearbeiten/committen.
+src/platform/esp32/libraries/

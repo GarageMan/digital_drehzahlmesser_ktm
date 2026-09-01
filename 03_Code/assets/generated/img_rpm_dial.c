@@ -57607,12 +57607,14 @@ static LV_ATTRIBUTE_MEM_ALIGN const uint8_t img_rpm_dial_map[] = {
     0xff, 0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0x00,
 };
 
-const lv_img_dsc_t img_rpm_dial = {
-    .header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA,
-    .header.always_zero = 0,
-    .header.reserved = 0,
+const lv_image_dsc_t img_rpm_dial = {
+    .header.magic = LV_IMAGE_HEADER_MAGIC,
+    .header.cf = LV_COLOR_FORMAT_ARGB8888,
+    .header.flags = 0,
     .header.w = 480,
     .header.h = 480,
+    .header.stride = 1920,
+    .header.reserved_2 = 0,
     .data_size = 921600,
     .data = img_rpm_dial_map,
 };

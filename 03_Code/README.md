@@ -29,10 +29,11 @@ Bezug: `Sprint1_Machbarkeitsanalyse`, `Sprint2_Erweiterung_Machbarkeitsanalyse`,
 
 ## Was absichtlich noch NICHT drin ist
 
-- Kein ESP32-Code, der echte Sensoren liest (Hardware liegt noch nicht vor).
-  `src/platform/esp32/main.cpp.stub` beschreibt die naechsten Schritte,
-  sobald das CrowPanel-Board da ist - bewusst ohne erfundene Pinbelegung
-  (siehe Kommentar dort).
+- Kein ESP32-Code, der echte Sensoren liest. Das CrowPanel-Board liegt zwar
+  inzwischen vor und `src/platform/esp32/ktm_bringup/` zeigt `core/ui.c`
+  darauf bereits mit simulierten Werten an (Anzeige-/Touch-Verifikation,
+  siehe README dort) - aber weiterhin ohne echte Sensor-/CAN-Anbindung und
+  bewusst ohne erfundene Pinbelegung.
 - Keine Anzeige von Gang/Temperaturen/Akku im UI selbst - die Werte werden
   vom Simulator zwar erzeugt und geloggt, aber Release 1 zeigt nur RPM und
   Uhr (siehe Tabelle "Wie geht es weiter" im Chat/Projekt).
@@ -43,8 +44,8 @@ Bezug: `Sprint1_Machbarkeitsanalyse`, `Sprint2_Erweiterung_Machbarkeitsanalyse`,
 ## Bauen und starten (Linux)
 
 ```bash
-# Einmalig: LVGL v8.3 + lv_drivers v8.3 laden (nicht im Repo enthalten,
-# siehe "Warum lib/ fast leer ist" unten)
+# Einmalig: LVGL v9.1.0 laden (nicht im Repo enthalten, siehe "Warum lib/
+# fast leer ist" unten)
 bash tools/setup_deps.sh
 
 # SDL2-Entwicklungspakete, falls noch nicht vorhanden (Debian/Ubuntu/Mint):
@@ -57,6 +58,15 @@ make -j$(nproc)
 ```
 
 Es oeffnet sich ein 480x480-Fenster mit dem Drehzahlmesser.
+
+**Hinweis zur v9-Portierung:** Der obige Ablauf und `core/ui.c` wurden
+gegen die tatsaechliche LVGL-9.1.0-API gegengeprueft (Header/Funktions-
+signaturen aus dem echten v9.1.0-Quellcode, nicht aus dem Gedaechtnis) und
+die PNG->LVGL-Bilddaten byteweise gegen die vorherige v8-Version verifiziert
+- ein tatsaechlicher Kompilierlauf (`cmake .. && make`) war in der
+Entwicklungsumgebung, in der diese Portierung entstand, aber nicht moeglich
+(kein cmake/gcc/SDL2-devel dort installiert). Beim ersten eigenen Durchlauf
+also auf moegliche Kompilierfehler gefasst sein.
 
 ### Bedienung im Simulator
 
@@ -89,24 +99,46 @@ python3 tools/png_to_lvgl.py assets/src/rpm_dial.png assets/generated/img_rpm_di
 
 ## Warum `lib/` fast leer ist
 
-LVGL v8 und lv_drivers werden bewusst **nicht** im Zip mitgeliefert
-(zusammen >100MB Fremdcode inkl. Demos/Beispielen, die wir nicht brauchen).
-`tools/setup_deps.sh` klont exakt die getesteten Versionen
-(`release/v8.3`-Branch beider Repos). `lib/lv_conf.h` und
-`lib/lv_drv_conf.h` sind dagegen Teil dieses Repos - sie enthalten die
-projektspezifische Konfiguration (480x480, `LV_COLOR_DEPTH=32`, `USE_SDL=1`)
-und duerfen beim Setup nicht ueberschrieben werden.
+LVGL wird bewusst **nicht** im Zip mitgeliefert (>30MB Fremdcode inkl.
+Demos/Beispielen, die wir nicht brauchen). `tools/setup_deps.sh` klont
+exakt die getestete Version (Tag `v9.1.0`). `lib/lv_conf.h` ist dagegen
+Teil dieses Repos - es enthaelt die projektspezifische Konfiguration
+(480x480, `LV_COLOR_DEPTH=16`/RGB565, `LV_USE_SDL=1`) und darf beim Setup
+nicht ueberschrieben werden. Ein separates `lv_drv_conf.h`/`lv_drivers`-Repo
+gibt es seit v9 nicht mehr - der SDL-Treiber ist Teil von LVGL selbst
+(`lib/lvgl/src/drivers/sdl/`).
 
-## Architektur (fuer die spaetere ESP32-Portierung)
+### LVGL-Versionswechsel v8.3 -> v9.1 (Nachtrag)
+
+Sprint 3 dokumentierte urspruenglich LVGL 8.3.11 als Vorgabe fuer das
+CrowPanel-Board. Beim Abgleich mit dem tatsaechlich aktuellen offiziellen
+Elecrow-Repo (nicht nur der Doku) stellte sich heraus, dass das dortige
+Beispielprojekt `RotaryScreen_2_1` - derselbe Sketch, mit dem der
+Hardware-Bring-up-Test vom 22.08. erfolgreich lief - nachweislich LVGL
+**9.1.0** nutzt (`example/Arduino/libraries/lvgl/library.json`, v9-API).
+PC-Simulator und `core/ui.c` wurden entsprechend auf v9 portiert, um die
+"1:1 Code-Uebernahme PC->ESP32" wieder herzustellen. Details siehe
+`Sprint3_Code_Grundgeruest.md`.
+
+## Architektur
 
 ```
 src/
   core/
     vehicle_data.h      <- Datenmodell + Provider-Interface (Plattform-neutral)
-    ui.c / ui.h          <- LVGL-UI, 1:1 fuer ESP32 wiederverwendbar
+    ui.c / ui.h          <- LVGL-v9-UI, 1:1 fuer ESP32 wiederverwendbar
   platform/
     sim/                  <- PC/SDL2-spezifisch (main.c, sim_provider.c)
-    esp32/                <- Platzhalter fuer die reale Firmware (noch offen)
+    esp32/
+      main.cpp.stub         <- ueberholter erster Plan, siehe Datei selbst
+      ktm_bringup/           <- eigener Bring-up-Sketch (Nadel-Sweep, Uhr,
+                                Touch), core/ui.c auf echter Hardware
+      bringup_pc_telemetry/  <- fruehere Touch-/Encoder-Mechanik-Verifikation
+                                (PC-Kennzahlen statt RPM), vor dem obigen
+                                Sketch entstanden
+      libraries/ktm_ui/     <- generierte Arduino-Bibliothek aus core/ +
+                                assets/generated/, siehe
+                                tools/prepare_esp32_library.sh (gitignored)
 assets/
   src/                    <- Original-PNGs (480x480, siehe Sprint 1)
   generated/              <- daraus erzeugte LVGL-C-Arrays (tools/png_to_lvgl.py)
@@ -117,7 +149,7 @@ docs/
 
 Das Prinzip (schon in Sprint 1 als Ziel formuliert): `core/` kennt nur das
 `vehicle_data_provider_t`-Interface, nie eine konkrete Implementierung. Der
-Wechsel von "simulierte Daten am PC" zu "echte Sensoren/CAN am ESP32"
+Wechsel von "simulierte Daten am PC/ESP32" zu "echte Sensoren/CAN am ESP32"
 betrifft ausschliesslich `platform/`, nicht `core/`.
 
 ## Lizenz
